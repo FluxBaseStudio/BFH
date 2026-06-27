@@ -50,7 +50,7 @@ const projects = [
 ];
 
 const stats = [
-  ["10+", "lat doświadczenia"],
+  ["5+", "lat doświadczenia"],
   ["500+", "zrealizowanych prac"],
   ["100%", "zaangażowania"],
   ["24h", "kontakt po zgłoszeniu"],
@@ -59,19 +59,19 @@ const stats = [
 const phoneContacts = [
   {
     name: "Łukasz",
-    scope: "kostka i elewacje",
+    scope: "elewacje i kostka",
     phone: "+48 666 610 480",
     href: "tel:+48666610480",
   },
   {
-    name: "Robert",
+    name: "Dawid",
     scope: "stany surowe",
-    phone: "+48 787 001 307",
-    href: "tel:+48787001307",
+    phone: "+48 606 441 448",
+    href: "tel:+48606441448",
   },
   {
     name: "Robert",
-    scope: "elewacje i wykończenia",
+    scope: "wykończenia",
     phone: "+48 516 588 349",
     href: "tel:+48516588349",
   },
@@ -124,7 +124,8 @@ function Reveal({
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [formSent, setFormSent] = useState(false);
+  const [formStatus, setFormStatus] = useState<"idle" | "success" | "error">("idle");
+  const [formMessage, setFormMessage] = useState("");
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -144,7 +145,53 @@ export default function Home() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormSent(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const recipientHref = String(formData.get("recipient") || "");
+    const selectedRecipient = phoneContacts.find(
+      (contact) => contact.href === recipientHref
+    );
+
+    const name = String(formData.get("name") || "").trim();
+    const phone = String(formData.get("phone") || "").trim();
+    const city = String(formData.get("city") || "").trim();
+    const message = String(formData.get("message") || "").trim();
+
+    if (!selectedRecipient || !name || !phone || !message) {
+      setFormStatus("error");
+      setFormMessage("Uzupełnij odbiorcę, imię, telefon i treść wiadomości.");
+      return;
+    }
+
+    const whatsappPhone = selectedRecipient.href.replace("tel:+", "").replace(/\D/g, "");
+
+    const whatsappMessage = [
+      "Dzień dobry, chciałbym zapytać o wycenę.",
+      "",
+      `Do: ${selectedRecipient.name} - ${selectedRecipient.scope}`,
+      `Imię: ${name}`,
+      `Telefon: ${phone}`,
+      city ? `Miejscowość: ${city}` : "",
+      "",
+      `Wiadomość: ${message}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+      whatsappMessage
+    )}`;
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+    setFormStatus("success");
+    setFormMessage(
+      "Otworzyliśmy WhatsApp z gotową wiadomością. Kliknij wyślij w aplikacji, aby dostarczyć zapytanie."
+    );
+
+    form.reset();
   };
 
   return (
@@ -159,13 +206,14 @@ export default function Home() {
 
       <nav className="navbar" aria-label="Główna nawigacja">
         <a className="brand brand-logo-link" href="#top" aria-label="Bullet Family House">
-          <span className="brand-logo-shell">
+          <span className="brand-logo-shell" aria-hidden="true">
             <img
               className="brand-logo"
               src="/images/bullet-family-house-logo.png"
-              alt="Bullet Family House"
+              alt=""
             />
           </span>
+          <span className="brand-name">Bullet Family House</span>
         </a>
 
         <button
@@ -200,7 +248,7 @@ export default function Home() {
         <div className="container hero-grid">
           <Reveal className="hero-copy">
             <p className="eyebrow">Bullet Family House</p>
-            <h1>Nowoczesne budownictwo i wykończenia</h1>
+            <h1>Zbudujemy dom idealny dla ciebie</h1>
             <p className="hero-text">
               Kompleksowe usługi budowlane od fundamentów po perfekcyjne
               wykończenia. Pracujemy dokładnie, terminowo i z dbałością o każdy
@@ -224,6 +272,50 @@ export default function Home() {
               renowacje i wykończenia.
             </p>
           </Reveal>
+        </div>
+      </section>
+
+
+      <section id="stress-free" className="section section-light stress-section">
+        <div className="container">
+          <Reveal className="section-heading center">
+            <p className="eyebrow">Spokojna budowa</p>
+            <h2>Chcesz ominąć stres, który często wykańcza podczas budowy domu?</h2>
+            <p>
+              Postaw na doświadczenie, wiedzę i praktykę zdobytą przez lata
+              pracy naszego zespołu. Przeprowadzimy Cię przez kolejne etapy
+              inwestycji spokojnie, konkretnie i bez chaosu na budowie.
+            </p>
+          </Reveal>
+
+          <div className="services-grid stress-grid">
+            <Reveal delay={0}>
+              <article className="service-card">
+                <span className="service-icon" aria-hidden="true">
+                  ✓
+                </span>
+                <h3>Jasny plan prac</h3>
+              </article>
+            </Reveal>
+
+            <Reveal delay={70}>
+              <article className="service-card">
+                <span className="service-icon" aria-hidden="true">
+                  ◇
+                </span>
+                <h3>Doświadczony zespół</h3>
+              </article>
+            </Reveal>
+
+            <Reveal delay={140}>
+              <article className="service-card">
+                <span className="service-icon" aria-hidden="true">
+                  ✦
+                </span>
+                <h3>Spokojna realizacja</h3>
+              </article>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -344,8 +436,8 @@ export default function Home() {
             <p className="eyebrow">Kontakt</p>
             <h2>Numery telefonu</h2>
             <p>
-              Wybierz osobę odpowiedzialną za konkretny zakres prac i zadzwoń
-              bezpośrednio. Dzięki temu szybciej ustalimy szczegóły inwestycji.
+              Wybierz osobę odpowiedzialną za konkretny zakres prac. Formularz
+              przygotuje gotową wiadomość WhatsApp do właściwej osoby.
             </p>
 
             <div className="phone-list" aria-label="Numery telefonu">
@@ -367,6 +459,20 @@ export default function Home() {
 
           <Reveal delay={120}>
             <form className="contact-form" onSubmit={handleSubmit}>
+              <label className="form-field form-field-full">
+                <span>Do kogo ma trafić wiadomość?</span>
+                <select name="recipient" defaultValue="" required>
+                  <option value="" disabled>
+                    Wybierz osobę i zakres prac
+                  </option>
+                  {phoneContacts.map((contact) => (
+                    <option value={contact.href} key={contact.href}>
+                      {contact.name} - {contact.scope} / {contact.phone}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
               <div className="form-row">
                 <input
                   type="text"
@@ -396,16 +502,15 @@ export default function Home() {
               />
               <label className="consent">
                 <input type="checkbox" required />
-                <span>Wyrażam zgodę na kontakt telefoniczny w sprawie zapytania.</span>
+                <span>Wyrażam zgodę na kontakt w sprawie zapytania.</span>
               </label>
               <button type="submit" className="primary-button full">
-                Wyślij zapytanie
+                Otwórz WhatsApp
               </button>
 
-              {formSent && (
-                <p className="form-note">
-                  Formularz wizualnie działa. Do faktycznej wysyłki podepniemy
-                  później API lub usługę mailową.
+              {formMessage && (
+                <p className={`form-note ${formStatus === "error" ? "is-error" : ""}`}>
+                  {formMessage}
                 </p>
               )}
             </form>
@@ -457,7 +562,26 @@ export default function Home() {
 
         <div className="footer-bottom">
           <span>© 2026 Bullet Family House. Wszelkie prawa zastrzeżone.</span>
-          <span>Polityka prywatności · Regulamin</span>
+
+          <a
+            className="powered-by-fluxbase"
+            href="https://fluxbase.pl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Powered by FluxBase"
+          >
+            <span>Powered by</span>
+            <strong>
+              FLUXBASE <b aria-hidden="true">⚡</b>
+            </strong>
+          </a>
+
+          <div className="footer-bottom-links">
+            <a href="/polityka-prywatnosci">Polityka prywatności</a>
+            <a href="/polityka-cookies">Pliki cookies</a>
+            <a href="/regulamin">Regulamin</a>
+            <a href="/rodo">RODO</a>
+          </div>
         </div>
       </footer>
     </main>
